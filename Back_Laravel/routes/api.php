@@ -22,6 +22,6 @@ Route::post('/nuevo-usuario','App\Http\Controllers\UsuarioController@guardar')->
 Route::post('/editar-usuario','App\Http\Controllers\UsuarioController@editar')->name('editar');
 Route::post('/eliminar-usuario','App\Http\Controllers\UsuarioController@eliminar')->name('eliminar');
 Route::get('/servicios','App\Http\Controllers\UsuarioController@servicios')->name('servicios');
-Route::get('/usuarios','App\Http\Controllers\UsuarioController@usuarios')->name('usuarios');
+Route::post('/usuarios','App\Http\Controllers\UsuarioController@usuarios')->name('usuarios');
 Route::post('/login','App\Http\Controllers\UsuarioController@login')->name('login');
 Route::post('/ingresos-usuario','App\Http\Controllers\UsuarioController@ingresosByUsuario')->name('ingresos');

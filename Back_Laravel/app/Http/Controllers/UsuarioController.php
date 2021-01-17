@@ -22,8 +22,12 @@ class UsuarioController extends Controller
         ]);
     }
 
-    public function usuarios(){
-        $response = Usuario::get();
+    public function usuarios(Request $request){
+        if(!is_null($request->identificacion)){
+            $response = Usuario::where('identificacion', $request->identificacion)->first();
+        }else{
+            $response = Usuario::get();
+        }
         return response()->json([
             'success' => true,
             'result' => $response,
