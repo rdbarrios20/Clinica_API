@@ -21,3 +21,7 @@ VALUES
 now(),
 now());
 
+use clinica;
+select ingresos.id_paciente_admision,ingresos.id_servicio,servicios.nombre as nombre_servicio,ingresos.created_at
+from ingresos inner join servicios
+on ingresos.id_servicio = servicios.id_servicio;

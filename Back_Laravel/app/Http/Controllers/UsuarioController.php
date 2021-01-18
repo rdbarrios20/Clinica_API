@@ -8,7 +8,9 @@ use App\Models\Usuario;
 use App\Models\Ingreso;
 use App\Models\Login;
 use App\Models\Servicio;
+use Carbon\Carbon;
 use Exception;
+
 use Illuminate\Support\Facades\DB;
 
 class UsuarioController extends Controller
@@ -27,6 +29,30 @@ class UsuarioController extends Controller
             $response = Usuario::where('identificacion', $request->identificacion)->first();
         }else{
             $response = Usuario::get();
+            // iterar la fecha por cada registro cambiando el formato de la fecha por uno mas amigable
+            $responseV2 = [];
+            foreach ($response as $item) {
+                // dd($item->created_at->format('Y-m-d h:m'));
+                
+                $responseV2 [] = [
+                    "id"=> $item->id,
+                    "identificacion" => $item->identificacion,
+                    "nombres" => $item->nombres,
+                    "telefono" => $item->telefono,
+                    "direccion" => $item->direccion,
+                    "created_at" => $item->created_at->format('Y-m-d h:m'),
+                    "updated_at" => $item->updated_at->format('Y-m-d h:m')
+                ];
+                //ejecmplo de date en tipo string
+                // $date_string = '31-01-2021';
+                // $item->created_at = Carbon::createFromFormat('d-m-Y', $date_string  )->format('Y-m-d'); // >> 2021-01-31
+                
+                //Como item->created_at ya este tipo TIMESTAMP, laravel automatimticamente lo mapea a CARBON object class,
+                //POr lo tanto,  no se necita la anterior implemnetacion
+                // $item->created_at = $item->created_at->format('Y-m-d h:m');
+            }
+            // cuando termina de iterar remplaza response por $responseV2
+            $response = $responseV2;
         }
         return response()->json([
             'success' => true,
@@ -34,20 +60,58 @@ class UsuarioController extends Controller
         ]);
     }
 
+    // Objectivo: Obtener los ingresos del usuario, VISITANTE, No del admin.... por su identificacion
     public function ingresosByUsuario(Request $request){
+        // Consultar el usuario por identificacion
         $usuario = Usuario::where('identificacion', $request->identificacion)->first();
         $ingresos = [];
+        // Validamos que exista el usuario
         if(!is_null($usuario)){
-            $ingresos = Ingreso::where('id_usuario',$usuario->id)->get();
+            // Si el usuario existe entonces consultamos los ingresos de ese usuario
+            // select ingresos.id_paciente_admision,ingresos.id_servicio,servicios.nombre,ingresos.created_at
+            // from ingresos inner join servicios
+            // on ingresos.id_servicio = servicios.id_servicio;
+            $ingresos = Ingreso::select('ingresos.id_paciente_admision','ingresos.id_servicio',
+            'servicios.nombre as nombre_servicio','ingresos.created_at')
+            ->join('servicios','ingresos.id_servicio','=','servicios.id_servicio')
+            ->where('ingresos.id_usuario',$usuario->id)
+            ->get();
 
+            $ingresos2 =[];
+
+             foreach ($ingresos as $item) {
+                 if(is_null($item->id_paciente_admision)){
+                    $id_paciente = 0;
+                 }else{
+                    $id_paciente = $item->id_paciente_admision;
+                 }
+
+                $ingresos2[] = [
+                 "id_paciente_admision" => $id_paciente,
+                 "id_servicio" => $item->id_servicio,
+                 "nombre_servicio" => $item->nombre_servicio,
+                 "created_at" => $item->created_at->format('Y-m-d h:m')
+                ];
+             }
+
+             $ingresos = $ingresos2;
+            // Retornamos los ingresos de ese usuario
+            return response()->json([
+                'success' => true,
+                'result' => $ingresos,
+            ]);
+
+        }else {
+            return response()->json([
+                'success' => false,
+                'result' => $ingresos,
+                'message' => "Este usuario no existe",
+            ]);
         }
-        return response()->json([
-            'success' => true,
-            'result' => $ingresos,
-        ]);
         //TODO: MAppear el nombre de los servicios
     }
 
+    // validar las credenciales de acceso del usuario, vistanteN. NO DEL ADMIN...
     public function login(Request $request){
         try {
             $response = Login::where('identificacion_usuario',$request->identificacion)
@@ -63,8 +127,8 @@ class UsuarioController extends Controller
                     'success' => false,
                     'message' => "Password o usuario errado",
                 ]);
-            }   
-            
+            }
+
         } catch (Exception $e) {
             report($e);
             return false;
@@ -99,7 +163,7 @@ class UsuarioController extends Controller
             $usuario->save();
 
             $usuario_nuevo = Usuario::where('identificacion', $identificacion)->first();
-          
+
             $ingreso = new Ingreso();
             $ingreso->id_usuario = $usuario_nuevo->id;
             $ingreso->id_paciente_admision = $id_paciente_admision;
@@ -111,7 +175,7 @@ class UsuarioController extends Controller
             $login->password = $identificacion; //INicial, by defualt
             $login->save();
 
-            
+
         }else{
             //Existe
             $usuario = Usuario::where('identificacion', $identificacion)->first();
@@ -121,7 +185,7 @@ class UsuarioController extends Controller
             $ingreso->id_servicio = $id_servicio;
             $ingreso->save();
         }
-        
+
         return response()->json([
             'success' => true,
             'message' => 'Ingreso registrado exitosamente',
@@ -131,8 +195,8 @@ class UsuarioController extends Controller
     public function eliminar(Request $request){
         $usuario = Usuario::where('identificacion',$request->identificacion)->first();
         if(!is_null($usuario)){
-            DB::table('ingresos')->where('id_usuario', $usuario->id)->delete(); 
-            DB::table('login')->where('identificacion_usuario',  $usuario->identificacion)->delete(); 
+            DB::table('ingresos')->where('id_usuario', $usuario->id)->delete();
+            DB::table('login')->where('identificacion_usuario',  $usuario->identificacion)->delete();
 
             // Ingreso::where('id_usuario', $usuario->id)->delete(); //todo: reVIEW
             // Login::where('identificacion_usuario', $usuario->identificacion)->delete();
