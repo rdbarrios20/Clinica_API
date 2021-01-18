@@ -72,7 +72,7 @@ class UsuarioController extends Controller
             // from ingresos inner join servicios
             // on ingresos.id_servicio = servicios.id_servicio;
             $ingresos = Ingreso::select('ingresos.id_paciente_admision','ingresos.id_servicio',
-            'servicios.nombre as nombre_servicio','ingresos.created_at')
+            'servicios.nombre as nombre_servicio','identificacion_familiar','nombre_familiar','ingresos.created_at')
             ->join('servicios','ingresos.id_servicio','=','servicios.id_servicio')
             ->where('ingresos.id_usuario',$usuario->id)
             ->get();
@@ -89,6 +89,8 @@ class UsuarioController extends Controller
                 $ingresos2[] = [
                  "id_paciente_admision" => $id_paciente,
                  "id_servicio" => $item->id_servicio,
+                 "identificacion_familiar" => $item->identificacion_familiar,
+                 "nombre_familiar" => $item->nombre_familiar,
                  "nombre_servicio" => $item->nombre_servicio,
                  "created_at" => $item->created_at->format('Y-m-d h:m')
                 ];
@@ -149,6 +151,8 @@ class UsuarioController extends Controller
         $telefono =  $request->telefono;
         $direccion =  $request->direccion;
         $id_paciente_admision =  $request->id_paciente_admision;
+        $identificacion_familiar =  $request->identificacion_familiar;
+        $nombre_familiar =  $request->nombre_familiar;
         $id_servicio =  $request->id_servicio;
 
         $response = Usuario::where('identificacion', $identificacion)->first();
@@ -167,6 +171,8 @@ class UsuarioController extends Controller
             $ingreso = new Ingreso();
             $ingreso->id_usuario = $usuario_nuevo->id;
             $ingreso->id_paciente_admision = $id_paciente_admision;
+            $ingreso->identificacion_familiar = $identificacion_familiar;
+            $ingreso->nombre_familiar = $nombre_familiar;
             $ingreso->id_servicio = $id_servicio;
             $ingreso->save();
 
@@ -182,6 +188,8 @@ class UsuarioController extends Controller
             $ingreso = new Ingreso();
             $ingreso->id_usuario = $usuario->id;
             $ingreso->id_paciente_admision = $id_paciente_admision;
+            $ingreso->identificacion_familiar = $identificacion_familiar;
+            $ingreso->nombre_familiar = $nombre_familiar;
             $ingreso->id_servicio = $id_servicio;
             $ingreso->save();
         }
@@ -223,6 +231,14 @@ class UsuarioController extends Controller
             $usuario->direccion = $request->direccion;
             $usuario->save();
 
+            $ingreso = new Ingreso();
+            $ingreso->id_usuario = $usuario->id;
+            $ingreso->id_paciente_admision = $request->id_paciente_admision;
+            $ingreso->identificacion_familiar = $request->identificacion_familiar;
+            $ingreso->nombre_familiar = $request->nombre_familiar;
+            $ingreso->id_servicio = $request->id_servicio;
+            $ingreso->save();
+            
             return response()->json([
                 'success' => true,
                 'message' => 'Registro modificado exitosamente',

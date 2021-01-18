@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
-
+//rutas api rest...
 Route::post('/nuevo-usuario','App\Http\Controllers\UsuarioController@guardar')->name('guardar');
 Route::post('/editar-usuario','App\Http\Controllers\UsuarioController@editar')->name('editar');
 Route::post('/eliminar-usuario','App\Http\Controllers\UsuarioController@eliminar')->name('eliminar');
