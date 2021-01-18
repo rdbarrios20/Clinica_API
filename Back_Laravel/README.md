@@ -4,8 +4,10 @@ Esta aplicacion laravel API administra los usuarios y los ingresos que se regist
 ### Pasos para ejecutarlo localmente
 1. Clonar el repositorio
 2. Usando la terminarl ejecutar el comando `composer install` (nota: debe instalarse composer antes)
-3. Actualizar las respectivas credenciales de la base de datos en el `.env` file 
-4. Ejecutar el `comando php artisan serve`
+3. Luego usa el comando `composer run-script post-root-package-install`
+4. Luego generas la key con `php artisan key:generate`
+5. Actualizar las respectivas credenciales de la base de datos en el `.env` file 
+6. Ejecutar el `comando php artisan serve`
 
 ## Pasos para restaurar la BD
 - Una copia de la BD esta en la siguiente ruta : `database\Bd_scripts\Bd_backup\clinica.sql`
